@@ -18,7 +18,7 @@
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html, body { height: 100%; }
-  html { overflow-x: clip; }
+  html, body { overflow-x: clip; overscroll-behavior-x: none; }
   body {
     font-family: var(--sans);
     background: radial-gradient(1200px 800px at 70% -10%, #2c3e6b 0%, #1b2340 45%, #12172b 100%);
@@ -1073,6 +1073,11 @@
     });
     cur = i;
     pageInd.textContent = (i + 1) + ' / ' + pages.length;
+    // ページ切替のたびに横方向のズレを強制リセット（iOS対策）
+    document.documentElement.scrollLeft = 0;
+    document.body.scrollLeft = 0;
+    const bc = pages[i].querySelector('.body2col');
+    if (bc) bc.scrollTop = 0;
   }
 
   function clearHl(scope) {
@@ -1094,7 +1099,16 @@
       const item = list[s];
       const span = pageEl.querySelector('span[data-sid="' + item.id + '"]');
       clearHl(pageEl);
-      if (span) { span.classList.add('active'); span.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); }
+      if (span) {
+        span.classList.add('active');
+        // 画面全体を動かさず、本文スクロール領域の中だけで追従させる
+        const bc = span.closest('.body2col');
+        if (bc && bc.scrollHeight > bc.clientHeight + 4) {
+          const target = span.getBoundingClientRect().top - bc.getBoundingClientRect().top
+            + bc.scrollTop - bc.clientHeight * 0.4;
+          bc.scrollTo({ top: Math.max(0, target), behavior: 'smooth' });
+        }
+      }
       try {
         await new Promise((res, rej) => {
           audio.src = 'assets/audio/' + item.file;
