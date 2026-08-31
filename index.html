@@ -18,6 +18,7 @@
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html, body { height: 100%; }
+  html { overflow-x: clip; }
   body {
     font-family: var(--sans);
     background: radial-gradient(1200px 800px at 70% -10%, #2c3e6b 0%, #1b2340 45%, #12172b 100%);
@@ -137,7 +138,7 @@
   .vstack .fig { flex: 1 1 auto; min-height: 0; width: 100%; }
   .vstack .fig > div { height: 100%; width: 100%; display: flex; flex-direction: column; align-items: center; min-height: 0; }
   .vstack .shotcard { max-width: 100%; flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
-  .vstack .shotcard img { flex: 1 1 auto; min-height: 0; width: auto; max-width: 100%; object-fit: contain; }
+  .vstack .shotcard img { flex: 1 1 auto; min-height: 0; width: auto; max-width: 100%; max-height: 52vh; object-fit: contain; }
   .vstack .figcap { flex: 0 0 auto; }
   .vstack .txt { flex: 0 0 auto; width: 100%; }
   .vstack .txt p { line-height: 1.85; margin-bottom: .5em; }
@@ -242,10 +243,11 @@
 
   /* ===== レスポンシブ ===== */
   @media (max-width: 860px) {
-    body { overflow-y: auto; }
+    body { overflow-y: auto; overflow-x: hidden; }
     #book { height: min(640px, calc(100vh - 128px)); }
     .body2col { flex-direction: column; gap: 12px; padding: 10px 22px 4px 30px; overflow-y: auto; }
     .fig { flex: 0 0 auto; }
+    .figimg { max-height: 56vh; }
     .txt p { font-size: 13.5px; line-height: 1.9; }
     .chapband { margin-left: 22px; margin-right: 16px; }
     .chapband h2 { font-size: 17px; }
@@ -269,6 +271,31 @@
     #pageInd { min-width: 46px; }
     .toggle { white-space: nowrap; }
     #speedSel { padding: 5px 8px; font-size: 12px; }
+  }
+
+  /* ===== 横向きスマホなど「高さの低い画面」 ===== */
+  @media (max-height: 540px) {
+    body { overflow-y: auto; overflow-x: hidden; }
+    #book { height: calc(100vh - 104px); min-height: 300px; }
+    .body2col { flex-direction: column; overflow-y: auto; }
+    .fig { flex: 0 0 auto; }
+    .txt { flex: 0 0 auto; }
+    .running { padding: 8px 24px 4px 30px; font-size: 10px; }
+    .running .brand { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+    .chapband { margin-top: 0; }
+    .chapband .no { font-size: 20px; }
+    .chapband h2 { font-size: 16px; }
+    .body2col { padding: 8px 26px 4px 34px; gap: 16px; overflow-y: auto; }
+    .txt p { font-size: 12.5px; line-height: 1.75; margin-bottom: .5em; }
+    .figimg { max-height: 48vh; }
+    .vstack .shotcard img { max-height: 38vh; }
+    .pagefoot { padding: 4px 0 8px; }
+    .cover .coverInner { gap: 10px; padding: 16px; }
+    .cover h1 { font-size: clamp(22px, 4.5vw, 38px); }
+    #startBtn { padding: 10px 24px; font-size: 14px; }
+    #ctrl { margin-top: 8px; padding: 6px 12px; gap: 6px 10px; font-size: 11.5px; }
+    #ctrl button { width: 30px; height: 30px; font-size: 12px; }
+    #ctrl button.primary { width: 36px; height: 36px; font-size: 14px; }
   }
 </style>
 </head>
