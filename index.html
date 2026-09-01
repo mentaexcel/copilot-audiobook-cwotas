@@ -245,9 +245,12 @@
   @media (max-width: 860px) {
     body { overflow-y: auto; overflow-x: hidden; }
     #book { height: min(640px, calc(100vh - 128px)); }
-    .body2col { flex-direction: column; gap: 12px; padding: 10px 22px 4px 30px; overflow-y: auto; }
-    .fig { flex: 0 0 auto; }
-    .figimg { max-height: 56vh; }
+    /* 画像は固定・文字エリアだけがスクロールするフレームになる */
+    .body2col, .body2col.vstack { flex-direction: column; gap: 12px; padding: 10px 22px 4px 30px; overflow: hidden; }
+    .fig, .vstack .fig { flex: 0 0 auto; }
+    .figimg { max-height: 42vh; }
+    .vstack .shotcard img { max-height: 34vh; }
+    .txt, .vstack .txt { flex: 1 1 auto; min-height: 0; overflow-y: auto; justify-content: flex-start; }
     .txt p { font-size: 13.5px; line-height: 1.9; }
     .chapband { margin-left: 22px; margin-right: 16px; }
     .chapband h2 { font-size: 17px; }
@@ -277,9 +280,9 @@
   @media (max-height: 540px) {
     body { overflow-y: auto; overflow-x: hidden; }
     #book { height: calc(100vh - 104px); min-height: 300px; }
-    .body2col { flex-direction: column; overflow-y: auto; }
-    .fig { flex: 0 0 auto; }
-    .txt { flex: 0 0 auto; }
+    .body2col, .body2col.vstack { flex-direction: column; overflow: hidden; }
+    .fig, .vstack .fig { flex: 0 0 auto; }
+    .txt, .vstack .txt { flex: 1 1 auto; min-height: 0; overflow-y: auto; justify-content: flex-start; }
     .running { padding: 8px 24px 4px 30px; font-size: 10px; }
     .running .brand { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
     .chapband { margin-top: 0; }
@@ -287,8 +290,9 @@
     .chapband h2 { font-size: 16px; }
     .body2col { padding: 8px 26px 4px 34px; gap: 16px; overflow-y: auto; }
     .txt p { font-size: 12.5px; line-height: 1.75; margin-bottom: .5em; }
-    .figimg { max-height: 48vh; }
-    .vstack .shotcard img { max-height: 38vh; }
+    .figimg { max-height: 36vh; }
+    .vstack .shotcard img { max-height: 26vh; }
+    .figcap { font-size: 10px; margin-top: 4px; }
     .pagefoot { padding: 4px 0 8px; }
     .cover .coverInner { gap: 10px; padding: 16px; }
     .cover h1 { font-size: clamp(22px, 4.5vw, 38px); }
@@ -1078,6 +1082,8 @@
     document.body.scrollLeft = 0;
     const bc = pages[i].querySelector('.body2col');
     if (bc) bc.scrollTop = 0;
+    const tx = pages[i].querySelector('.txt');
+    if (tx) tx.scrollTop = 0;
   }
 
   function clearHl(scope) {
@@ -1101,12 +1107,18 @@
       clearHl(pageEl);
       if (span) {
         span.classList.add('active');
-        // 画面全体を動かさず、本文スクロール領域の中だけで追従させる
-        const bc = span.closest('.body2col');
-        if (bc && bc.scrollHeight > bc.clientHeight + 4) {
-          const target = span.getBoundingClientRect().top - bc.getBoundingClientRect().top
-            + bc.scrollTop - bc.clientHeight * 0.4;
-          bc.scrollTo({ top: Math.max(0, target), behavior: 'smooth' });
+        // 画面全体は動かさず、文字フレーム（.txt）の中だけで
+        // 「はみ出したときだけ最小限」追従させる（画像は固定のまま）
+        const scroller = [span.closest('.txt'), span.closest('.body2col')]
+          .find(el => el && el.scrollHeight > el.clientHeight + 4);
+        if (scroller) {
+          const cR = scroller.getBoundingClientRect();
+          const sR = span.getBoundingClientRect();
+          if (sR.bottom > cR.bottom - 6) {
+            scroller.scrollTo({ top: scroller.scrollTop + (sR.bottom - cR.bottom) + 28, behavior: 'smooth' });
+          } else if (sR.top < cR.top + 6) {
+            scroller.scrollTo({ top: Math.max(0, scroller.scrollTop - (cR.top - sR.top) - 28), behavior: 'smooth' });
+          }
         }
       }
       try {
